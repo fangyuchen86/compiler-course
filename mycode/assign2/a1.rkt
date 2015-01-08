@@ -71,12 +71,18 @@
 
 (define (Tail? tail)
   (match tail
-    [`( (,(? Triv? triv))) tail]
+    [`( ,(? Triv? triv)) tail]
     [`(begin ,(? Effect? effect) ... ,(? Tail? tail*)) tail]
     [_ #f]))
 
-#;
+
+(define (Letrec-item? item)
+  (match item
+    [`(,(? label? lable) (lambda () ,(? Tail? tail))) item]
+    [_ #f]))
+
 (define (Program? program)
   (match program
-    [`(letrec ([,(label? l) ]))]))
+    [`(letrec (,(? Letrec-item? item) ...) ,(? Tail? tail)) program]
+    [_ #f]))
 

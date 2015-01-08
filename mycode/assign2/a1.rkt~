@@ -22,7 +22,9 @@
     [_ #f]))
 
 (define (fvar? fvar)
-  (regexp-match #px"fv\\d+" (symbol->string fvar)))
+  (if (symbol? fvar)
+      (regexp-match #px"fv\\d+" (symbol->string fvar))
+      #f))
 
 (define int32?
   (lambda (x)
@@ -35,7 +37,9 @@
 
 
 (define (label? label)
-  (regexp-match #px"\\S+\\$\\d+" (symbol->string label)))
+  (if (symbol? label)
+      (regexp-match #px"\\S+\\$\\d+" (symbol->string label))
+      #f))
 
 (define (Triv? triv)
   (match triv
@@ -56,3 +60,23 @@
     [_ #f]))
 
 (define sra (lambda (x n) (fxrshift x n)))
+
+
+(define (Effect? effect)
+  (match effect
+    [`(set! ,(? Var? var) ,(? Triv? triv)) effect]
+    [`(set! ,(? Var? var) ( ,(? Binop? binop) ,(? Triv? triv1) ,(? Triv? triv2))) effect]
+    [_ #f]))
+
+
+(define (Tail? tail)
+  (match tail
+    [`( (,(? Triv? triv))) tail]
+    [`(begin ,(? Effect? effect) ... ,(? Tail? tail*)) tail]
+    [_ #f]))
+
+#;
+(define (Program? program)
+  (match program
+    [`(letrec ([,(label? l) ]))]))
+
